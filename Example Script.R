@@ -159,7 +159,7 @@ data_test <- read.csv("testdata.csv")
         assign(paste0("adj.matrix.", i), get_adj_matx(dat=networki$individual.moves, network$receiver.locations$UniqueID)) #make a matrix for each treatment. The matrix will be named "adj.matrix.(treatment name)
       }
     
-     a<- mantel(xdis=adj.matrix.1, ydis=adj.matrix.2, method="pearson", permutations=999) #pearson's correlation comparing the newly made matrices
+     mantel(xdis=adj.matrix.1, ydis=adj.matrix.2, method="pearson", permutations=999) #pearson's correlation comparing the newly made matrices
     
 
     
