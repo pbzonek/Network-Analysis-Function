@@ -3,12 +3,12 @@
 #-------------------------------------------------------------#
 ### Functions built by Paul Bzonek to summarize and plot network analysis data
 ### Functions were made by modifying code from:
-        #Author:Kim Whoriskey    |   Whoriskey et al. 2019 
-              #code used to get network movements between receivers  
-              #https://doi.org/10.1111/2041-210X.13188
-        #Author:Christopher Chizinski
-              #code used to plot networks with a ggplot base
-              #https://chrischizinski.github.io/rstats/igraph-ggplotll/
+#Author:Kim Whoriskey    |   Whoriskey et al. 2019 
+#code used to get network movements between receivers  
+#https://doi.org/10.1111/2041-210X.13188
+#Author:Christopher Chizinski
+#code used to plot networks with a ggplot base
+#https://chrischizinski.github.io/rstats/igraph-ggplotll/
 #-------------------------------------------------------------#
 #-------------------------------------------------------------#
 
@@ -16,6 +16,37 @@
 library(ggplot2) #plotting package
 library(igraph) #plotting package
 library(rgdal) #geospatial package
+
+
+#Inspect componenets of function loop
+data_test<-read.csv("testdata.csv")
+
+FishID <- data_test$Fish #Specify your fishID data #Show function where to find data
+ReceiverID<- data_test$Hydrophone #Specify your ReceiverID data #Show function where to find data
+lat <- data_test$y #Specify your latitude data #Show function where to find data
+long <- data_test$x #Specify your longitude data #Show function where to find data
+data <- as.data.frame(cbind(FishID, ReceiverID, lat, long)) #Inspection dataframe
+
+data$UniqueID <- as.numeric(as.factor(interaction(data$ReceiverID, data$lat, data$long))) #Combine lat and long values to find unique combinations (in case recievers move). Convert text to numbers
+data$UniqueID <- as.integer(as.numeric(as.factor(data$UniqueID))) #Make UniqueID numbers sequential
+
+fishunique <- unique(data$FishID) #Follow function steps
+fishsub <- subset(data,data$FishID==fishunique[1]) #Follow function steps #pick fish to inspect
+
+values.rle.full<-rle(fishsub$UniqueID)$values #Follow function steps
+values.from<-rle(fishsub$UniqueID)$values[-length(rle(fishsub$UniqueID)$values)] #Follow function steps
+values.to<-rle(fishsub$UniqueID)$values[-1] #Follow function steps
+values.fish <- rep(unique(fishsub$FishID), length(rle(fishsub$UniqueID)$values)-1) #Follow function steps
+n <-(length(values.rle.full)) #deal with uneven lengths
+length(values.from) <- n #deal with uneven lengths
+length(values.to) <- n #deal with uneven lengths
+length(values.fish) <- n #deal with uneven lengths
+values.rle.df <- cbind(values.rle.full,values.from,values.to, values.fish) #Display what function loop data looks like
+#Inspect matrix data by running line below, and clicking real matrix1 code
+#matrix1<-as.data.frame(full.network[["moves"]]) #Run function once so that full.network[["moves"]] has been made
+
+
+
 
 
 #-------------------------------------------------------------#
@@ -37,12 +68,12 @@ network_summary <- function(data, FishID, ReceiverID, lat, long, ...){
   to <- numeric() #the UniqueID the fish moved TO
   fish <- numeric() #the fish
   
-    for(i in 1:length(fishunique)){ #Build loop to track the receiver movements per fish#
-      fishsub <- data[data$FishID==fishunique[i],] ##subset data$FishID to the run of detections for one fish
-      from <- append(from, rle(fishsub$UniqueID)$values[-length(rle(fishsub$UniqueID)$values)]) #build a list of UniqueIDs, and show all but last, making a 'from' vector
-      to <- append(to, rle(fishsub$UniqueID)$values[-1]) #build a list of UniqueIDs, and show all but first, making a 'to' vector
-      fish <- append(fish, rep(unique(fishsub$FishID), length(rle(fishsub$UniqueID)$values)-1)) #record the fish id 
-      } #end loop tracking fish movements
+  for(i in 1:length(fishunique)){ #Build loop to track the receiver movements per fish#
+    fishsub <- data[data$FishID==fishunique[i],] ##subset data$FishID to the run of detections for one fish
+    from <- append(from, rle(fishsub$UniqueID)$values[-length(rle(fishsub$UniqueID)$values)]) #build a list of UniqueIDs, and show all but last, making a 'from' vector
+    to <- append(to, rle(fishsub$UniqueID)$values[-1]) #build a list of UniqueIDs, and show all but first, making a 'to' vector
+    fish <- append(fish, rep(unique(fishsub$FishID), length(rle(fishsub$UniqueID)$values)-1)) #record the fish id 
+  } #end loop tracking fish movements
   
   #record the data
   individual.moves <- data.frame(from, to, fish) #movements between UniqueIDs
@@ -54,7 +85,7 @@ network_summary <- function(data, FishID, ReceiverID, lat, long, ...){
   Receiver.locations <- Receiver.locations[Receiver.locations$Freq!=0,] #Remove 0s made by non-existenent receiver-lat/long combinations
   Receiver.locations$lat <- as.numeric(as.character(Receiver.locations$lat)) #add latitude to dataframe
   Receiver.locations$long <- as.numeric(as.character(Receiver.locations$long)) #add longitude to dataframe
-
+  
   
   #Build the dataframe that will be used for plotting     
   plot.data<-as.data.frame(moves) #New dataframe
@@ -62,13 +93,13 @@ network_summary <- function(data, FishID, ReceiverID, lat, long, ...){
   plot.data$from.y <- Receiver.locations$lat[match(plot.data$from, Receiver.locations$UniqueID)] #match the matrix data with the 'reciver.locations' data
   plot.data$to.x <- Receiver.locations$long[match(plot.data$to, Receiver.locations$UniqueID)] #match the matrix data with the 'reciver.locations' data
   plot.data$to.y <- Receiver.locations$lat[match(plot.data$to, Receiver.locations$UniqueID)] #match the matrix data with the 'reciver.locations' data
-
+  
   ###
   return(list(receiver.locations=Receiver.locations, moves.matrix=moves.matrix, individual.moves=individual.moves, plot.data=plot.data )) #Store function data in useful structure
   ###
 } #end function
 
- 
+
 
 
 #-------------------------------------------------------------#
@@ -101,14 +132,14 @@ network_plot <- function(data, #specify previously created network matrix
   #If else loop to look for optional shapefile. 
   if(is.na(shapefile)){b <- NULL} else{ #Ignore the line below if no shapefile is provided
     b<-geom_polygon(data = shapefile, aes(x = long, y = lat, group = group), colour = "black", fill = NA) #plot provided shapefile
-    } #end if else loop
+  } #end if else loop
   
   #If else loop to look for optional labels. 
   if(isFALSE(labels)){c <- NULL} else{ #Ignore the lines below if labels are not wanted
     c<-geom_label(data=data$receiver.locations, #add labels for receiver names
-          aes(x=long, y=lat, label=(data$receiver.locations$ReceiverNames)), #add labels for receiver names
-          hjust = 0, size=label.size, alpha=label.transparency, nudge_x=label.nudge) #add labels for receiver names
-    } #end if else loop
+                  aes(x=long, y=lat, label=(data$receiver.locations$ReceiverNames)), #add labels for receiver names
+                  hjust = 0, size=label.size, alpha=label.transparency, nudge_x=label.nudge) #add labels for receiver names
+  } #end if else loop
   ###
   print(a + b + c) #print plot with optional shapefile and labels
   ###
