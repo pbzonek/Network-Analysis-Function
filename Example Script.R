@@ -41,7 +41,7 @@ str(data2)
 
     ###Format date, and order data by time 
     data2$date <- as.POSIXct(as.character(data2$date, format="%Y-%m-%d %H:%M:%S"))
-    data2 <-data2[order(data2$Timestamp),]
+    data2 <-data2[order(data2$date),]
     
     
     #Format shapefile
