@@ -9,11 +9,12 @@
 ### Functions built by Paul Bzonek to summarize and plot network analysis data
 ### Functions were made by modifying code from:
 #Author:Kim Whoriskey    |   Whoriskey et al. 2019 
-#code used to get network movements between receivers  
 #https://doi.org/10.1111/2041-210X.13188
+#code used to get network movements between receivers  
+#
 #Author:Christopher Chizinski
-#code used to plot networks with a ggplot base
 #https://chrischizinski.github.io/rstats/igraph-ggplotll/
+#code used to plot networks with a ggplot base
 ###
 #-------------------------------------------------------------#
 #-------------------------------------------------------------#
