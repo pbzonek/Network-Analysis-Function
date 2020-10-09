@@ -92,7 +92,7 @@ network_plot <- function(data, #specify previously created network matrix
     scale_size("line", range = c(line.min, line.max))+  #Set line-size range
     geom_point(data=data$receiver.locations, aes(x=long, y=lat, colour=Freq), shape=receiver.shape, stroke=receiver.stroke, size=receiver.size)+  #Add reciever circles, colour by matrix frequency
     scale_color_gradient(low=colour.gradient.low, high=colour.gradient.high)+  #Basic colour scale
-    coord_map(xlim=xlim, ylim=ylim)+  #Specify limits if shapefile is too big
+    coord_fix(xlim=xlim, ylim=ylim)+  #Lock aspect ratio. Specify limits if shapefile is too big
     ylab(y.axis)+ #y axis label
     xlab(x.axis)+ # x axis label
     ggtitle(as.character(plot.title))+ #add optional title
